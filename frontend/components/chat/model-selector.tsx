@@ -28,12 +28,19 @@ export function ModelSelector({ onModelChange }: ModelSelectorProps) {
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
       const response = await fetch(`${apiUrl}/api/models/list`)
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
       const data = await response.json()
 
-      setModels(data.models)
-      setCurrentModel(data.current_model)
+      setModels(data.models || [])
+      setCurrentModel(data.current_model || '')
     } catch (error) {
       console.error('Failed to fetch models:', error)
+      setModels([])
+      setCurrentModel('')
     }
   }
 
