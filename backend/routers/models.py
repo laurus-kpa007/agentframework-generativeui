@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 class ModelInfo(BaseModel):
     """Model information."""
     name: str
-    size: str
+    size: int | str  # Can be int (bytes) or str
     modified_at: str
 
 
@@ -47,7 +47,7 @@ async def list_models(ollama: OllamaService = Depends(get_ollama_service)):
             models=[
                 ModelInfo(
                     name=model["name"],
-                    size=model.get("size", "unknown"),
+                    size=str(model.get("size", "unknown")),
                     modified_at=model.get("modified_at", "")
                 )
                 for model in models_data
