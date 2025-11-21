@@ -95,7 +95,8 @@ ollama pull qwen2.5:latest
 
 ## 📚 문서
 
-- **[빠른 시작 가이드](QUICKSTART.md)**: 설치 및 실행 방법
+- **[설치 가이드](INSTALLATION_GUIDE.md)**: Windows & macOS 상세 설치 가이드 ⭐ NEW
+- **[빠른 시작 가이드](QUICKSTART.md)**: Docker를 이용한 빠른 시작
 - **[통합 계획서](INTEGRATION_PLAN.md)**: 전체 통합 전략 및 상세 가이드
 - **[아키텍처 다이어그램](ARCHITECTURE_DIAGRAMS.md)**: 12개의 Mermaid 다이어그램
 - **[구현 작업 체크리스트](IMPLEMENTATION_TODOS.md)**: Phase별 상세 작업 목록
