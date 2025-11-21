@@ -54,23 +54,32 @@ async def stream_chat(request: ChatRequest):
     async def event_generator():
         """Generate SSE events."""
         try:
-            # Analyze intent (simplified for now)
+            # Analyze intent
             intent = await analyze_intent(request.message)
             logger.info(f"Detected intent: {intent}")
 
-            # Generate UI component if applicable
-            component_info = get_component_for_intent(intent)
+            # Add system prompt for structured response
+            if intent != "general":
+                system_message = get_system_prompt_for_intent(intent)
+                messages_with_system = [
+                    {"role": "system", "content": system_message}
+                ] + messages
+            else:
+                messages_with_system = messages
+
+            # Stream text response
+            response_text = ""
+            async for chunk in ollama.stream_chat(messages_with_system):
+                response_text += chunk
+                yield StreamEvent.text(chunk)
+
+            # Parse response and extract UI data
+            component_info = extract_component_from_response(response_text, intent)
             if component_info:
                 yield StreamEvent.component(
                     component_info["name"],
                     component_info["props"]
                 )
-
-            # Stream text response
-            response_text = ""
-            async for chunk in ollama.stream_chat(messages):
-                response_text += chunk
-                yield StreamEvent.text(chunk)
 
             # Add assistant response to conversation
             conversations[conversation_id].append(
@@ -339,3 +348,128 @@ def get_component_for_intent(intent: str) -> dict | None:
     }
 
     return component_map.get(intent)
+
+
+def get_system_prompt_for_intent(intent: str) -> str:
+    """Get system prompt for specific intent to guide LLM response."""
+    prompts = {
+        "stock_query": """주식 정보를 제공할 때는 다음 형식으로 답변해주세요:
+답변 끝에 반드시 다음 JSON을 포함해주세요:
+```json
+{"symbol": "종목코드", "name": "회사명", "price": 가격, "change": 변동금액, "changePercent": 변동률}
+```""",
+
+        "weather_query": """날씨 정보를 제공할 때는 다음 형식으로 답변해주세요:
+답변 끝에 반드시 다음 JSON을 포함해주세요:
+```json
+{"location": "지역명", "temperature": 온도, "condition": "날씨상태", "humidity": 습도, "windSpeed": 풍속}
+```""",
+
+        "flight_query": """항공편 정보를 제공할 때는 다음 형식으로 답변해주세요:
+답변 끝에 반드시 다음 JSON을 포함해주세요:
+```json
+{"flightNumber": "항공편명", "airline": "항공사", "departure": "출발지", "arrival": "도착지", "departureTime": "출발시간", "arrivalTime": "도착시간", "status": "상태"}
+```""",
+
+        "recipe_query": """레시피를 제공할 때는 다음 형식으로 답변해주세요:
+답변 끝에 반드시 다음 JSON을 포함해주세요:
+```json
+{"title": "요리명", "description": "설명", "prepTime": 준비시간(분), "cookTime": 조리시간(분), "servings": 인분, "difficulty": "난이도", "ingredients": ["재료1", "재료2"]}
+```""",
+
+        "movie_query": """영화 정보를 제공할 때는 다음 형식으로 답변해주세요:
+답변 끝에 반드시 다음 JSON을 포함해주세요:
+```json
+{"title": "영화제목", "year": 개봉연도, "rating": 평점, "genre": ["장르1", "장르2"], "runtime": 러닝타임(분), "director": "감독명", "plot": "줄거리"}
+```""",
+
+        "product_query": """상품 정보를 제공할 때는 다음 형식으로 답변해주세요:
+답변 끝에 반드시 다음 JSON을 포함해주세요:
+```json
+{"name": "상품명", "price": 가격, "originalPrice": 원가, "rating": 평점, "reviews": 리뷰수, "description": "설명", "category": "카테고리", "inStock": true}
+```""",
+
+        "hotel_query": """호텔 정보를 제공할 때는 다음 형식으로 답변해주세요:
+답변 끝에 반드시 다음 JSON을 포함해주세요:
+```json
+{"name": "호텔명", "location": "위치", "rating": 평점, "reviews": 리뷰수, "pricePerNight": 1박가격, "amenities": ["편의시설1", "편의시설2"], "description": "설명"}
+```""",
+
+        "restaurant_query": """맛집 정보를 제공할 때는 다음 형식으로 답변해주세요:
+답변 끝에 반드시 다음 JSON을 포함해주세요:
+```json
+{"name": "식당명", "cuisine": "음식종류", "location": "위치", "rating": 평점, "reviews": 리뷰수, "priceRange": 가격대(1-4), "openNow": true, "hours": "영업시간", "description": "설명"}
+```""",
+
+        "book_query": """도서 정보를 제공할 때는 다음 형식으로 답변해주세요:
+답변 끝에 반드시 다음 JSON을 포함해주세요:
+```json
+{"title": "책제목", "author": "저자", "publishedYear": 출판연도, "rating": 평점, "pages": 페이지수, "genre": ["장르1", "장르2"], "description": "설명"}
+```""",
+
+        "news_query": """뉴스 정보를 제공할 때는 다음 형식으로 답변해주세요:
+답변 끝에 반드시 다음 JSON을 포함해주세요:
+```json
+{"title": "뉴스제목", "source": "출처", "author": "기자명", "publishedAt": "발행시간(ISO)", "description": "요약", "category": "카테고리"}
+```""",
+
+        "event_query": """이벤트 정보를 제공할 때는 다음 형식으로 답변해주세요:
+답변 끝에 반드시 다음 JSON을 포함해주세요:
+```json
+{"name": "이벤트명", "date": "날짜", "time": "시간", "location": "지역", "venue": "장소", "attendees": 참석자수, "ticketPrice": 티켓가격, "category": "카테고리", "description": "설명"}
+```""",
+
+        "exercise_query": """운동 정보를 제공할 때는 다음 형식으로 답변해주세요:
+답변 끝에 반드시 다음 JSON을 포함해주세요:
+```json
+{"name": "운동명", "category": "카테고리", "difficulty": "난이도", "duration": 시간(분), "caloriesBurned": 소모칼로리, "equipment": ["장비1", "장비2"], "description": "설명", "sets": 세트수, "reps": 반복횟수}
+```"""
+    }
+
+    return prompts.get(intent, "")
+
+
+def extract_component_from_response(response: str, intent: str) -> dict | None:
+    """Extract component data from LLM response."""
+    import json
+    import re
+
+    # Find JSON block in response
+    json_pattern = r'```json\s*(\{[^`]+\})\s*```'
+    match = re.search(json_pattern, response, re.DOTALL)
+
+    if not match:
+        logger.warning(f"No JSON found in response for intent: {intent}")
+        return None
+
+    try:
+        data = json.loads(match.group(1))
+
+        # Map intent to component name
+        component_names = {
+            "stock_query": "StockCard",
+            "weather_query": "WeatherCard",
+            "flight_query": "FlightCard",
+            "recipe_query": "RecipeCard",
+            "movie_query": "MovieCard",
+            "product_query": "ProductCard",
+            "hotel_query": "HotelCard",
+            "restaurant_query": "RestaurantCard",
+            "book_query": "BookCard",
+            "news_query": "NewsCard",
+            "event_query": "EventCard",
+            "exercise_query": "ExerciseCard"
+        }
+
+        component_name = component_names.get(intent)
+        if not component_name:
+            return None
+
+        return {
+            "name": component_name,
+            "props": data
+        }
+
+    except json.JSONDecodeError as e:
+        logger.error(f"Failed to parse JSON from response: {e}")
+        return None

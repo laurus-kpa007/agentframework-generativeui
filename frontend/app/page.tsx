@@ -55,8 +55,11 @@ export default function Home() {
     setMessages((prev) => [...prev, assistantMessage])
 
     try {
+      let fullContent = ''
+
       for await (const event of apiClient.streamChat(userMessage)) {
         if (event.type === 'text') {
+          fullContent += event.content
           assistantMessage.content += event.content
           setMessages((prev) => [
             ...prev.slice(0, -1),
@@ -67,6 +70,11 @@ export default function Home() {
             name: event.component!,
             props: event.props,
           }
+
+          // Remove JSON block from text content
+          const jsonPattern = /```json\s*\{[^`]+\}\s*```/g
+          assistantMessage.content = fullContent.replace(jsonPattern, '').trim()
+
           setMessages((prev) => [
             ...prev.slice(0, -1),
             { ...assistantMessage },
