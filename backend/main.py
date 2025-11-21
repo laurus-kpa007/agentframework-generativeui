@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from config.settings import settings
-from routers import health, chat
+from routers import health, chat, models
 from services.ollama_service import OllamaService
 
 # Configure logging
@@ -58,6 +58,7 @@ app.add_middleware(
 # Include routers
 app.include_router(health.router, prefix="/api", tags=["health"])
 app.include_router(chat.router, prefix="/api/chat", tags=["chat"])
+app.include_router(models.router, prefix="/api/models", tags=["models"])
 
 
 @app.get("/")

@@ -157,16 +157,30 @@ async def analyze_intent(message: str) -> str:
     """Analyze user intent (simplified)."""
     message_lower = message.lower()
 
-    if any(word in message_lower for word in ["stock", "share", "price", "aapl", "nasdaq"]):
+    if any(word in message_lower for word in ["stock", "share", "price", "aapl", "nasdaq", "trading"]):
         return "stock_query"
-    elif any(word in message_lower for word in ["weather", "temperature", "forecast"]):
+    elif any(word in message_lower for word in ["weather", "temperature", "forecast", "climate"]):
         return "weather_query"
-    elif any(word in message_lower for word in ["flight", "airplane", "airport"]):
+    elif any(word in message_lower for word in ["flight", "airplane", "airport", "airline"]):
         return "flight_query"
-    elif any(word in message_lower for word in ["recipe", "cook", "food"]):
+    elif any(word in message_lower for word in ["recipe", "cook", "cooking", "food", "dish", "ingredient"]):
         return "recipe_query"
-    elif any(word in message_lower for word in ["movie", "film", "cinema"]):
+    elif any(word in message_lower for word in ["movie", "film", "cinema", "actor", "director"]):
         return "movie_query"
+    elif any(word in message_lower for word in ["product", "buy", "shop", "shopping", "purchase"]):
+        return "product_query"
+    elif any(word in message_lower for word in ["hotel", "accommodation", "booking", "stay"]):
+        return "hotel_query"
+    elif any(word in message_lower for word in ["restaurant", "dine", "dining", "eat", "reservation"]):
+        return "restaurant_query"
+    elif any(word in message_lower for word in ["book", "read", "reading", "author", "novel"]):
+        return "book_query"
+    elif any(word in message_lower for word in ["news", "article", "headline", "breaking"]):
+        return "news_query"
+    elif any(word in message_lower for word in ["event", "concert", "show", "performance", "ticket"]):
+        return "event_query"
+    elif any(word in message_lower for word in ["exercise", "workout", "fitness", "gym", "training"]):
+        return "exercise_query"
     else:
         return "general"
 
@@ -204,6 +218,127 @@ def get_component_for_intent(intent: str) -> dict | None:
                 "departureTime": "14:00",
                 "arrivalTime": "16:30",
                 "status": "On Time"
+            }
+        },
+        "recipe_query": {
+            "name": "RecipeCard",
+            "props": {
+                "title": "Spaghetti Carbonara",
+                "description": "Classic Italian pasta dish with eggs, cheese, and bacon",
+                "prepTime": 10,
+                "cookTime": 20,
+                "servings": 4,
+                "difficulty": "Easy",
+                "ingredients": [
+                    "400g spaghetti",
+                    "200g bacon",
+                    "4 eggs",
+                    "100g Parmesan cheese",
+                    "Black pepper",
+                    "Salt"
+                ]
+            }
+        },
+        "movie_query": {
+            "name": "MovieCard",
+            "props": {
+                "title": "The Shawshank Redemption",
+                "year": 1994,
+                "rating": 9.3,
+                "genre": ["Drama", "Crime"],
+                "runtime": 142,
+                "director": "Frank Darabont",
+                "plot": "Two imprisoned men bond over a number of years, finding solace and eventual redemption through acts of common decency."
+            }
+        },
+        "product_query": {
+            "name": "ProductCard",
+            "props": {
+                "name": "Wireless Bluetooth Headphones",
+                "price": 79.99,
+                "originalPrice": 129.99,
+                "rating": 4.5,
+                "reviews": 1234,
+                "description": "Premium noise-cancelling headphones with 30-hour battery life",
+                "category": "Electronics",
+                "inStock": True
+            }
+        },
+        "hotel_query": {
+            "name": "HotelCard",
+            "props": {
+                "name": "Grand Plaza Hotel",
+                "location": "Seoul, South Korea",
+                "rating": 5,
+                "reviews": 892,
+                "pricePerNight": 150,
+                "amenities": ["wifi", "breakfast", "tv", "gym", "pool"],
+                "description": "Luxury hotel in the heart of Seoul with stunning city views"
+            }
+        },
+        "restaurant_query": {
+            "name": "RestaurantCard",
+            "props": {
+                "name": "Sushi Master",
+                "cuisine": "Japanese",
+                "location": "123 Main St, Tokyo",
+                "rating": 4.8,
+                "reviews": 567,
+                "priceRange": 3,
+                "openNow": True,
+                "hours": "11:00 AM - 10:00 PM",
+                "description": "Authentic Japanese sushi restaurant with fresh seafood daily"
+            }
+        },
+        "book_query": {
+            "name": "BookCard",
+            "props": {
+                "title": "1984",
+                "author": "George Orwell",
+                "publishedYear": 1949,
+                "rating": 4.6,
+                "pages": 328,
+                "genre": ["Dystopian", "Science Fiction", "Political Fiction"],
+                "description": "A dystopian social science fiction novel and cautionary tale about the dangers of totalitarianism"
+            }
+        },
+        "news_query": {
+            "name": "NewsCard",
+            "props": {
+                "title": "Breaking: Major Tech Announcement",
+                "source": "Tech News Daily",
+                "author": "John Smith",
+                "publishedAt": "2025-11-21T10:30:00Z",
+                "description": "A major technology company announces groundbreaking new product that could revolutionize the industry",
+                "category": "Technology"
+            }
+        },
+        "event_query": {
+            "name": "EventCard",
+            "props": {
+                "name": "Summer Music Festival 2025",
+                "date": "July 15-17, 2025",
+                "time": "2:00 PM - 11:00 PM",
+                "location": "Seoul, South Korea",
+                "venue": "Olympic Stadium",
+                "attendees": 50000,
+                "ticketPrice": 150,
+                "category": "Music Festival",
+                "description": "Three days of incredible music featuring international and local artists"
+            }
+        },
+        "exercise_query": {
+            "name": "ExerciseCard",
+            "props": {
+                "name": "Push-ups",
+                "category": "Strength Training",
+                "difficulty": "Beginner",
+                "duration": 15,
+                "caloriesBurned": 100,
+                "equipment": [],
+                "description": "Classic bodyweight exercise for chest, shoulders, and triceps",
+                "sets": 3,
+                "reps": 12
             }
         }
     }

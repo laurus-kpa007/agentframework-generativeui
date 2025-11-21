@@ -3,7 +3,21 @@
 import { useState } from 'react'
 import { Send } from 'lucide-react'
 import { apiClient, StreamEvent } from '@/lib/api-client'
-import { StockCard, WeatherCard, FlightCard } from '@/components/ui'
+import {
+  StockCard,
+  WeatherCard,
+  FlightCard,
+  RecipeCard,
+  MovieCard,
+  ProductCard,
+  HotelCard,
+  RestaurantCard,
+  BookCard,
+  NewsCard,
+  EventCard,
+  ExerciseCard,
+} from '@/components/ui'
+import { ModelSelector } from '@/components/chat/model-selector'
 import { cn } from '@/lib/utils'
 
 interface Message {
@@ -79,6 +93,24 @@ export default function Home() {
         return <WeatherCard {...component.props} />
       case 'FlightCard':
         return <FlightCard {...component.props} />
+      case 'RecipeCard':
+        return <RecipeCard {...component.props} />
+      case 'MovieCard':
+        return <MovieCard {...component.props} />
+      case 'ProductCard':
+        return <ProductCard {...component.props} />
+      case 'HotelCard':
+        return <HotelCard {...component.props} />
+      case 'RestaurantCard':
+        return <RestaurantCard {...component.props} />
+      case 'BookCard':
+        return <BookCard {...component.props} />
+      case 'NewsCard':
+        return <NewsCard {...component.props} />
+      case 'EventCard':
+        return <EventCard {...component.props} />
+      case 'ExerciseCard':
+        return <ExerciseCard {...component.props} />
       default:
         return null
     }
@@ -88,12 +120,23 @@ export default function Home() {
     <div className="flex flex-col h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-white border-b px-6 py-4">
-        <h1 className="text-2xl font-bold">
-          Agent Framework + Generative UI
-        </h1>
-        <p className="text-sm text-gray-500">
-          Powered by Ollama & FastAPI
-        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold">
+              Agent Framework + Generative UI
+            </h1>
+            <p className="text-sm text-gray-500">
+              Powered by Ollama & FastAPI
+            </p>
+          </div>
+          <ModelSelector
+            onModelChange={(model) => {
+              console.log('Model changed to:', model)
+              // Optionally clear conversation when model changes
+              // setMessages([])
+            }}
+          />
+        </div>
       </header>
 
       {/* Messages */}
@@ -106,24 +149,78 @@ export default function Home() {
             <p className="text-gray-500">
               Try asking about stocks, weather, or flights
             </p>
-            <div className="mt-6 flex flex-wrap gap-2 justify-center">
+            <div className="mt-6 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 max-w-4xl mx-auto">
               <button
                 onClick={() => setInput('Show me AAPL stock price')}
-                className="px-4 py-2 bg-white border rounded-lg text-sm hover:bg-gray-50"
+                className="px-3 py-2 bg-white border rounded-lg text-xs hover:bg-gray-50 transition-colors"
               >
-                Show me AAPL stock
+                📈 Stock Info
               </button>
               <button
-                onClick={() => setInput('What is the weather in Seoul?')}
-                className="px-4 py-2 bg-white border rounded-lg text-sm hover:bg-gray-50"
+                onClick={() => setInput('Weather in Seoul')}
+                className="px-3 py-2 bg-white border rounded-lg text-xs hover:bg-gray-50 transition-colors"
               >
-                Weather in Seoul
+                🌤️ Weather
               </button>
               <button
                 onClick={() => setInput('Show flight KE001')}
-                className="px-4 py-2 bg-white border rounded-lg text-sm hover:bg-gray-50"
+                className="px-3 py-2 bg-white border rounded-lg text-xs hover:bg-gray-50 transition-colors"
               >
-                Flight information
+                ✈️ Flight
+              </button>
+              <button
+                onClick={() => setInput('Show me a recipe for pasta')}
+                className="px-3 py-2 bg-white border rounded-lg text-xs hover:bg-gray-50 transition-colors"
+              >
+                🍳 Recipe
+              </button>
+              <button
+                onClick={() => setInput('Tell me about the movie Shawshank')}
+                className="px-3 py-2 bg-white border rounded-lg text-xs hover:bg-gray-50 transition-colors"
+              >
+                🎬 Movie
+              </button>
+              <button
+                onClick={() => setInput('Show me headphones to buy')}
+                className="px-3 py-2 bg-white border rounded-lg text-xs hover:bg-gray-50 transition-colors"
+              >
+                🛍️ Product
+              </button>
+              <button
+                onClick={() => setInput('Find a hotel in Seoul')}
+                className="px-3 py-2 bg-white border rounded-lg text-xs hover:bg-gray-50 transition-colors"
+              >
+                🏨 Hotel
+              </button>
+              <button
+                onClick={() => setInput('Recommend a restaurant')}
+                className="px-3 py-2 bg-white border rounded-lg text-xs hover:bg-gray-50 transition-colors"
+              >
+                🍽️ Restaurant
+              </button>
+              <button
+                onClick={() => setInput('Show me a book to read')}
+                className="px-3 py-2 bg-white border rounded-lg text-xs hover:bg-gray-50 transition-colors"
+              >
+                📚 Book
+              </button>
+              <button
+                onClick={() => setInput('Latest tech news')}
+                className="px-3 py-2 bg-white border rounded-lg text-xs hover:bg-gray-50 transition-colors"
+              >
+                📰 News
+              </button>
+              <button
+                onClick={() => setInput('Show me events')}
+                className="px-3 py-2 bg-white border rounded-lg text-xs hover:bg-gray-50 transition-colors"
+              >
+                🎫 Event
+              </button>
+              <button
+                onClick={() => setInput('Give me a workout routine')}
+                className="px-3 py-2 bg-white border rounded-lg text-xs hover:bg-gray-50 transition-colors"
+              >
+                💪 Exercise
               </button>
             </div>
           </div>

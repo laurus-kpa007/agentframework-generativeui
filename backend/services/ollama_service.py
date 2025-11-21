@@ -175,6 +175,23 @@ class OllamaService:
             logger.error(f"Failed to list models: {e}")
             return []
 
+    async def list_models_detailed(self) -> List[Dict[str, Any]]:
+        """List available models with details."""
+        try:
+            response = await self.client.get("/api/tags")
+            response.raise_for_status()
+            data = response.json()
+            return data.get("models", [])
+        except httpx.HTTPError as e:
+            logger.error(f"Failed to list models: {e}")
+            return []
+
+    def set_model(self, model: str):
+        """Set the active model."""
+        self.model = model
+        self._warmed_up = False  # Reset warmup state
+        logger.info(f"Model set to: {model}")
+
     async def warmup(self):
         """Warm up the model for faster first response."""
         if self._warmed_up:

@@ -8,7 +8,8 @@
       "Bash(git config:*)",
       "Bash(git remote add:*)",
       "Bash(git push:*)",
-      "Bash(chmod:*)"
+      "Bash(chmod:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nfeat: Implement Phase 1 - Complete basic integration\n\nBackend Implementation:\n- FastAPI application with async support\n- Ollama LLM service with streaming\n- Chat router with SSE streaming\n- Health check endpoints\n- Pydantic models for validation\n- Configuration management\n- Warmup optimization for TTFT\n\nFrontend Implementation:\n- Next.js 15 with App Router\n- TypeScript configuration\n- Tailwind CSS styling\n- Chat interface with real-time streaming\n- 3 UI components (StockCard, WeatherCard, FlightCard)\n- API client with SSE support\n- Responsive design\n\nInfrastructure:\n- Docker Compose setup\n- Dockerfiles for backend and frontend\n- Development and setup scripts\n- Environment configuration examples\n- MCP server configuration (prepared)\n\nDocumentation:\n- Updated README with implementation details\n- QUICKSTART.md for quick setup guide\n- API endpoint documentation\n\nFeatures:\n- Real-time chat streaming via SSE\n- Intent analysis for UI component selection\n- Dynamic UI component rendering\n- Conversation history management\n- TTFT performance monitoring\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
     ],
     "deny": [],
     "ask": []
