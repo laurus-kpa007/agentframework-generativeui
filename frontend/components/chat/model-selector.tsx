@@ -63,6 +63,7 @@ export function ModelSelector({ onModelChange }: ModelSelectorProps) {
 
   const formatModelName = (name: string) => {
     // Remove :latest or other tags for display
+    if (!name) return 'Select Model'
     return name.split(':')[0]
   }
 
