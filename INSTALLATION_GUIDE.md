@@ -19,7 +19,7 @@ Agent Framework + Generative UI를 Windows 11과 macOS에서 설치하고 실행
 
 **다운로드 및 설치:**
 1. [Python 공식 웹사이트](https://www.python.org/downloads/) 접속
-2. "Download Python 3.11.x" 버튼 클릭
+2. "Download Python 3.11.x" 버튼 클릭 (**Python 3.13은 피하세요** - 일부 라이브러리 호환성 문제)
 3. 설치 프로그램 실행
 4. ⚠️ **중요**: "Add Python to PATH" 체크박스 선택
 5. "Install Now" 클릭
@@ -28,11 +28,14 @@ Agent Framework + Generative UI를 Windows 11과 macOS에서 설치하고 실행
 ```powershell
 # PowerShell 또는 CMD 열기 (Win + R → cmd)
 python --version
-# 출력: Python 3.11.x
+# 출력: Python 3.11.x 또는 3.12.x (권장)
 
 pip --version
 # 출력: pip 23.x.x
 ```
+
+⚠️ **Python 3.13 사용 중인 경우:**
+Python 3.13은 일부 라이브러리와 호환성 문제가 있습니다. Python 3.11 또는 3.12 사용을 권장합니다.
 
 ### 2. Node.js 20 이상 설치
 
@@ -110,6 +113,9 @@ python -m venv venv
 # 가상 환경 활성화 (CMD)
 # venv\Scripts\activate.bat
 
+# pip 업그레이드
+python -m pip install --upgrade pip
+
 # 의존성 설치
 pip install -r requirements.txt
 
@@ -127,6 +133,16 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 
 # 그 후 다시 활성화 시도
 .\venv\Scripts\Activate.ps1
+```
+
+**pydantic-core 설치 오류 (Python 3.13) 발생 시:**
+```powershell
+# 방법 1: 사전 빌드된 버전 사용 (권장)
+pip install pydantic==2.5.3 --only-binary=:all:
+pip install -r requirements.txt
+
+# 방법 2: Python 3.11 또는 3.12로 재설치 (권장)
+# Python 3.11/3.12 다운로드 후 가상환경 재생성
 ```
 
 ### 3. Frontend 설정
@@ -619,6 +635,50 @@ ollama pull llama3.2:3b
 # 가상 환경에서 다시 설치
 pip install --upgrade pip
 pip install -r requirements.txt --force-reinstall
+```
+
+### 9. pydantic-core 빌드 오류 (Python 3.13)
+
+**증상:**
+```
+error: metadata-generation-failed
+Rust not found, installing into a temporary directory
+```
+
+**해결 방법:**
+
+**Windows:**
+```powershell
+# 방법 1: 사전 빌드된 버전 사용 (가장 쉬움)
+pip install --upgrade pip
+pip install pydantic==2.5.3 --only-binary=:all:
+pip install -r requirements.txt
+
+# 방법 2: Python 버전 변경 (권장)
+# 1. Python 3.11 또는 3.12 다운로드 및 설치
+# 2. 기존 venv 삭제
+Remove-Item -Recurse -Force venv
+# 3. 새로운 Python으로 venv 재생성
+python -m venv venv
+.\venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+```
+
+**macOS:**
+```bash
+# 방법 1: 사전 빌드된 버전 사용
+pip install --upgrade pip
+pip install pydantic==2.5.3 --only-binary=:all:
+pip install -r requirements.txt
+
+# 방법 2: Python 버전 변경
+# Homebrew로 Python 3.11 설치
+brew install python@3.11
+# 기존 venv 삭제 후 재생성
+rm -rf venv
+python3.11 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
 ```
 
 ### 8. Frontend 빌드 오류
