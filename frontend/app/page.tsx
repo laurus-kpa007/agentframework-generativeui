@@ -72,13 +72,13 @@ export default function Home() {
             { ...assistantMessage },
           ])
         } else if (event.type === 'error') {
-          console.error('Stream error:', event.message)
+          console.error('스트림 에러:', event.message)
         }
       }
     } catch (error) {
-      console.error('Failed to stream chat:', error)
+      console.error('채팅 스트림 실패:', error)
       assistantMessage.content =
-        'Sorry, I encountered an error. Please try again.'
+        '죄송합니다. 오류가 발생했습니다. 다시 시도해주세요.'
       setMessages((prev) => [...prev.slice(0, -1), { ...assistantMessage }])
     } finally {
       setIsStreaming(false)
@@ -116,6 +116,21 @@ export default function Home() {
     }
   }
 
+  const sampleQueries = [
+    { icon: '📈', label: '주식 정보', query: '애플 주식 가격 알려줘' },
+    { icon: '🌤️', label: '날씨', query: '서울 날씨 알려줘' },
+    { icon: '✈️', label: '항공편', query: 'KE001 항공편 정보 알려줘' },
+    { icon: '🍳', label: '레시피', query: '파스타 레시피 알려줘' },
+    { icon: '🎬', label: '영화', query: '쇼생크 탈출 영화 정보 알려줘' },
+    { icon: '🛍️', label: '상품', query: '헤드폰 추천해줘' },
+    { icon: '🏨', label: '호텔', query: '서울 호텔 추천해줘' },
+    { icon: '🍽️', label: '맛집', query: '맛집 추천해줘' },
+    { icon: '📚', label: '도서', query: '읽을만한 책 추천해줘' },
+    { icon: '📰', label: '뉴스', query: '최신 기술 뉴스 알려줘' },
+    { icon: '🎫', label: '이벤트', query: '이벤트 정보 알려줘' },
+    { icon: '💪', label: '운동', query: '운동 루틴 알려줘' },
+  ]
+
   return (
     <div className="flex flex-col h-screen bg-gray-50">
       {/* Header */}
@@ -126,16 +141,29 @@ export default function Home() {
               Agent Framework + Generative UI
             </h1>
             <p className="text-sm text-gray-500">
-              Powered by Ollama & FastAPI
+              Ollama & FastAPI 기반 생성형 UI 챗봇
             </p>
           </div>
           <ModelSelector
             onModelChange={(model) => {
-              console.log('Model changed to:', model)
-              // Optionally clear conversation when model changes
-              // setMessages([])
+              console.log('모델 변경:', model)
             }}
           />
+        </div>
+
+        {/* Sample Query Buttons - Always Visible */}
+        <div className="mt-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
+          {sampleQueries.map((sample, index) => (
+            <button
+              key={index}
+              onClick={() => setInput(sample.query)}
+              className="px-3 py-2 bg-white border rounded-lg text-xs hover:bg-blue-50 hover:border-blue-300 transition-colors"
+              disabled={isStreaming}
+            >
+              <span className="mr-1">{sample.icon}</span>
+              {sample.label}
+            </button>
+          ))}
         </div>
       </header>
 
@@ -144,85 +172,11 @@ export default function Home() {
         {messages.length === 0 && (
           <div className="text-center py-12">
             <h2 className="text-xl font-semibold text-gray-700 mb-2">
-              Welcome! How can I help you today?
+              안녕하세요! 무엇을 도와드릴까요?
             </h2>
             <p className="text-gray-500">
-              Try asking about stocks, weather, or flights
+              위의 버튼을 클릭하거나 직접 질문을 입력해보세요
             </p>
-            <div className="mt-6 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 max-w-4xl mx-auto">
-              <button
-                onClick={() => setInput('Show me AAPL stock price')}
-                className="px-3 py-2 bg-white border rounded-lg text-xs hover:bg-gray-50 transition-colors"
-              >
-                📈 Stock Info
-              </button>
-              <button
-                onClick={() => setInput('Weather in Seoul')}
-                className="px-3 py-2 bg-white border rounded-lg text-xs hover:bg-gray-50 transition-colors"
-              >
-                🌤️ Weather
-              </button>
-              <button
-                onClick={() => setInput('Show flight KE001')}
-                className="px-3 py-2 bg-white border rounded-lg text-xs hover:bg-gray-50 transition-colors"
-              >
-                ✈️ Flight
-              </button>
-              <button
-                onClick={() => setInput('Show me a recipe for pasta')}
-                className="px-3 py-2 bg-white border rounded-lg text-xs hover:bg-gray-50 transition-colors"
-              >
-                🍳 Recipe
-              </button>
-              <button
-                onClick={() => setInput('Tell me about the movie Shawshank')}
-                className="px-3 py-2 bg-white border rounded-lg text-xs hover:bg-gray-50 transition-colors"
-              >
-                🎬 Movie
-              </button>
-              <button
-                onClick={() => setInput('Show me headphones to buy')}
-                className="px-3 py-2 bg-white border rounded-lg text-xs hover:bg-gray-50 transition-colors"
-              >
-                🛍️ Product
-              </button>
-              <button
-                onClick={() => setInput('Find a hotel in Seoul')}
-                className="px-3 py-2 bg-white border rounded-lg text-xs hover:bg-gray-50 transition-colors"
-              >
-                🏨 Hotel
-              </button>
-              <button
-                onClick={() => setInput('Recommend a restaurant')}
-                className="px-3 py-2 bg-white border rounded-lg text-xs hover:bg-gray-50 transition-colors"
-              >
-                🍽️ Restaurant
-              </button>
-              <button
-                onClick={() => setInput('Show me a book to read')}
-                className="px-3 py-2 bg-white border rounded-lg text-xs hover:bg-gray-50 transition-colors"
-              >
-                📚 Book
-              </button>
-              <button
-                onClick={() => setInput('Latest tech news')}
-                className="px-3 py-2 bg-white border rounded-lg text-xs hover:bg-gray-50 transition-colors"
-              >
-                📰 News
-              </button>
-              <button
-                onClick={() => setInput('Show me events')}
-                className="px-3 py-2 bg-white border rounded-lg text-xs hover:bg-gray-50 transition-colors"
-              >
-                🎫 Event
-              </button>
-              <button
-                onClick={() => setInput('Give me a workout routine')}
-                className="px-3 py-2 bg-white border rounded-lg text-xs hover:bg-gray-50 transition-colors"
-              >
-                💪 Exercise
-              </button>
-            </div>
           </div>
         )}
 
@@ -272,7 +226,7 @@ export default function Home() {
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Type your message..."
+            placeholder="메시지를 입력하세요..."
             className="flex-1 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
             disabled={isStreaming}
           />
@@ -282,7 +236,7 @@ export default function Home() {
             className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             <Send className="w-4 h-4" />
-            Send
+            전송
           </button>
         </form>
       </div>
