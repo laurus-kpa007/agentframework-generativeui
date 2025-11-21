@@ -1,11 +1,10 @@
 """Chat router with streaming support."""
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
 from typing import List
 import logging
 
 from models.schemas import ChatRequest, ChatMessage
-from services.ollama_service import OllamaService
 from services.streaming_service import StreamingService, StreamEvent
 
 router = APIRouter()
@@ -15,28 +14,26 @@ logger = logging.getLogger(__name__)
 conversations: dict[str, List[ChatMessage]] = {}
 
 
-async def get_ollama_service():
-    """Dependency for Ollama service."""
-    service = OllamaService()
-    try:
-        yield service
-    finally:
-        await service.close()
+def get_ollama_service():
+    """Get the global Ollama service instance."""
+    from main import ollama_service
+    if ollama_service is None:
+        raise HTTPException(status_code=503, detail="Ollama service not initialized")
+    return ollama_service
 
 
-async def get_streaming_service():
+def get_streaming_service():
     """Dependency for streaming service."""
     return StreamingService()
 
 
 @router.post("/stream")
-async def stream_chat(
-    request: ChatRequest,
-    ollama: OllamaService = Depends(get_ollama_service),
-    streaming: StreamingService = Depends(get_streaming_service)
-):
+async def stream_chat(request: ChatRequest):
     """Stream chat response with SSE."""
     logger.info(f"Chat request: {request.message[:50]}...")
+
+    ollama = get_ollama_service()
+    streaming = get_streaming_service()
 
     # Get or create conversation
     conversation_id = request.conversation_id or "default"
@@ -98,11 +95,9 @@ async def stream_chat(
 
 
 @router.post("/message")
-async def send_message(
-    request: ChatRequest,
-    ollama: OllamaService = Depends(get_ollama_service)
-):
+async def send_message(request: ChatRequest):
     """Send chat message (non-streaming)."""
+    ollama = get_ollama_service()
     conversation_id = request.conversation_id or "default"
     if conversation_id not in conversations:
         conversations[conversation_id] = []

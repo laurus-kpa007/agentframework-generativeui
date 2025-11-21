@@ -1,10 +1,8 @@
 """Models router for LLM management."""
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, HTTPException
 from typing import List
 from pydantic import BaseModel
 import logging
-
-from services.ollama_service import OllamaService
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -28,19 +26,19 @@ class ModelSelectRequest(BaseModel):
     model: str
 
 
-async def get_ollama_service():
-    """Dependency for Ollama service."""
-    service = OllamaService()
-    try:
-        yield service
-    finally:
-        await service.close()
+def get_ollama_service():
+    """Get the global Ollama service instance."""
+    from main import ollama_service
+    if ollama_service is None:
+        raise HTTPException(status_code=503, detail="Ollama service not initialized")
+    return ollama_service
 
 
 @router.get("/list", response_model=ModelsListResponse)
-async def list_models(ollama: OllamaService = Depends(get_ollama_service)):
+async def list_models():
     """List available Ollama models."""
     try:
+        ollama = get_ollama_service()
         models_data = await ollama.list_models_detailed()
 
         return ModelsListResponse(
@@ -60,12 +58,11 @@ async def list_models(ollama: OllamaService = Depends(get_ollama_service)):
 
 
 @router.post("/select")
-async def select_model(
-    request: ModelSelectRequest,
-    ollama: OllamaService = Depends(get_ollama_service)
-):
+async def select_model(request: ModelSelectRequest):
     """Select active model."""
     try:
+        ollama = get_ollama_service()
+
         # Verify model exists
         available_models = await ollama.list_models()
 
@@ -93,8 +90,9 @@ async def select_model(
 
 
 @router.get("/current")
-async def get_current_model(ollama: OllamaService = Depends(get_ollama_service)):
+async def get_current_model():
     """Get currently selected model."""
+    ollama = get_ollama_service()
     return {
         "model": ollama.model,
         "base_url": ollama.base_url
