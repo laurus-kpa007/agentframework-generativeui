@@ -1,0 +1,88 @@
+version: '3.8'
+
+services:
+  # Ollama LLM Server
+  ollama:
+    image: ollama/ollama:latest
+    container_name: agentframework-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    environment:
+      - OLLAMA_HOST=0.0.0.0:11434
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+    networks:
+      - agentframework-network
+
+  # Backend FastAPI
+  backend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.backend
+    container_name: agentframework-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - OLLAMA_MODEL=qwen2.5:latest
+      - API_HOST=0.0.0.0
+      - API_PORT=8000
+      - LOG_LEVEL=info
+      - CORS_ORIGINS=http://localhost:3000,http://localhost:3001
+      - DEBUG=False
+    volumes:
+      - ./backend:/app
+      - ./config:/app/config
+      - backend_logs:/app/logs
+    depends_on:
+      ollama:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    restart: unless-stopped
+    networks:
+      - agentframework-network
+
+  # Frontend Next.js
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.frontend
+    container_name: agentframework-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - NEXT_PUBLIC_WS_URL=ws://localhost:8000
+      - NEXT_PUBLIC_ENABLE_MCP_UI=true
+      - NEXT_PUBLIC_DEBUG=false
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - agentframework-network
+
+volumes:
+  ollama_data:
+    name: agentframework_ollama_data
+    driver: local
+  backend_logs:
+    name: agentframework_backend_logs
+    driver: local
+
+networks:
+  agentframework-network:
+    name: agentframework_network
+    driver: bridge

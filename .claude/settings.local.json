@@ -3,7 +3,12 @@
     "allow": [
       "Bash(tree:*)",
       "Bash(git init:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nInitial commit: Project integration plan and documentation\n\n- Add comprehensive integration plan (INTEGRATION_PLAN.md)\n- Add 12 architecture diagrams with Mermaid (ARCHITECTURE_DIAGRAMS.md)\n- Add detailed implementation todos (IMPLEMENTATION_TODOS.md)\n- Add project README with quick start guide\n- Configure .gitignore for Python and Node.js\n\nThis commit establishes the foundation for integrating Agent Framework\nand Generative UI into a unified full-stack application.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git config:*)",
+      "Bash(git remote add:*)",
+      "Bash(git push:*)",
+      "Bash(chmod:*)"
     ],
     "deny": [],
     "ask": []
