@@ -12,11 +12,16 @@ interface StockCardProps {
 export function StockCard({
   symbol,
   name,
-  price,
-  change,
-  changePercent,
+  price = 0,
+  change = 0,
+  changePercent = 0,
 }: StockCardProps) {
   const isPositive = change >= 0
+
+  // Ensure values are numbers
+  const safePrice = Number(price) || 0
+  const safeChange = Number(change) || 0
+  const safeChangePercent = Number(changePercent) || 0
 
   return (
     <div className="rounded-lg border bg-white shadow-sm p-4 max-w-md">
@@ -41,20 +46,20 @@ export function StockCard({
             )}
             <span>
               {isPositive ? '+' : ''}
-              {changePercent.toFixed(2)}%
+              {safeChangePercent.toFixed(2)}%
             </span>
           </div>
         </div>
 
         <div className="flex items-baseline gap-2">
-          <span className="text-3xl font-bold">${price.toFixed(2)}</span>
+          <span className="text-3xl font-bold">${safePrice.toFixed(2)}</span>
           <span
             className={cn(
               'text-sm',
               isPositive ? 'text-green-600' : 'text-red-600'
             )}
           >
-            {isPositive ? '+' : ''}${change.toFixed(2)}
+            {isPositive ? '+' : ''}${safeChange.toFixed(2)}
           </span>
         </div>
 

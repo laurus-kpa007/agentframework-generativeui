@@ -6,8 +6,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from config.settings import settings
-from routers import health, chat, models
+from routers import health, chat, models, mcp
 from services.ollama_service import OllamaService
+from services.mcp_service import MCPService
 
 # Configure logging
 logging.basicConfig(
@@ -16,24 +17,31 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Global Ollama service instance for warmup
+# Global service instances
 ollama_service = None
+mcp_service = None
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan manager."""
-    global ollama_service
+    global ollama_service, mcp_service
     logger.info("Starting application...")
 
     # Initialize and warmup Ollama
     ollama_service = OllamaService()
     await ollama_service.warmup()
 
+    # Initialize MCP service
+    mcp_service = MCPService()
+    logger.info("MCP service initialized")
+
     yield
 
     # Cleanup
     logger.info("Shutting down application...")
+    if mcp_service:
+        await mcp_service.close()
     if ollama_service:
         await ollama_service.close()
 
@@ -59,6 +67,7 @@ app.add_middleware(
 app.include_router(health.router, prefix="/api", tags=["health"])
 app.include_router(chat.router, prefix="/api/chat", tags=["chat"])
 app.include_router(models.router, prefix="/api/models", tags=["models"])
+app.include_router(mcp.router, prefix="/api/mcp", tags=["mcp"])
 
 
 @app.get("/")

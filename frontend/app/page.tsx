@@ -1,7 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Send } from 'lucide-react'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
+import rehypeRaw from 'rehype-raw'
 import { apiClient, StreamEvent } from '@/lib/api-client'
 import {
   StockCard,
@@ -18,21 +21,28 @@ import {
   ExerciseCard,
 } from '@/components/ui'
 import { ModelSelector } from '@/components/chat/model-selector'
+import { MCPSettings } from '@/components/mcp/mcp-settings'
 import { cn } from '@/lib/utils'
 
 interface Message {
   role: 'user' | 'assistant'
   content: string
-  component?: {
+  components?: Array<{
     name: string
     props: any
-  }
+  }>
 }
 
 export default function Home() {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [isStreaming, setIsStreaming] = useState(false)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  // Auto-scroll to bottom when messages change
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -66,13 +76,19 @@ export default function Home() {
             { ...assistantMessage },
           ])
         } else if (event.type === 'component') {
-          assistantMessage.component = {
-            name: event.component!,
-            props: event.props,
+          // Initialize components array if not exists
+          if (!assistantMessage.components) {
+            assistantMessage.components = []
           }
 
-          // Remove JSON block from text content
-          const jsonPattern = /```json\s*\{[^`]+\}\s*```/g
+          // Add component to array
+          assistantMessage.components.push({
+            name: event.component!,
+            props: event.props,
+          })
+
+          // Remove JSON blocks from text content
+          const jsonPattern = /```json\s*\{[^`]+?\}\s*```/g
           assistantMessage.content = fullContent.replace(jsonPattern, '').trim()
 
           setMessages((prev) => [
@@ -124,6 +140,72 @@ export default function Home() {
     }
   }
 
+  // Render markdown with custom styling
+  const renderMarkdown = (text: string, isUserMessage: boolean = false) => {
+    return (
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
+        rehypePlugins={[rehypeRaw]}
+        components={{
+          // Links - open in new tab
+          a: ({ node, ...props }) => (
+            <a
+              {...props}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={
+                isUserMessage
+                  ? 'text-blue-200 hover:text-white underline break-all font-semibold'
+                  : 'text-blue-600 hover:text-blue-800 underline break-all font-semibold'
+              }
+            />
+          ),
+          // Headings
+          h1: ({ node, ...props }) => <h1 {...props} className="text-2xl font-bold mt-4 mb-2" />,
+          h2: ({ node, ...props }) => <h2 {...props} className="text-xl font-bold mt-3 mb-2" />,
+          h3: ({ node, ...props }) => <h3 {...props} className="text-lg font-bold mt-2 mb-1" />,
+          // Bold text
+          strong: ({ node, ...props }) => <strong {...props} className="font-bold" />,
+          // Lists
+          ul: ({ node, ...props }) => <ul {...props} className="list-disc list-inside my-2 space-y-1" />,
+          ol: ({ node, ...props }) => <ol {...props} className="list-decimal list-inside my-2 space-y-1" />,
+          li: ({ node, ...props }) => <li {...props} className="ml-4" />,
+          // Tables
+          table: ({ node, ...props }) => (
+            <div className="overflow-x-auto my-4">
+              <table {...props} className="min-w-full divide-y divide-gray-200 border border-gray-300" />
+            </div>
+          ),
+          thead: ({ node, ...props }) => <thead {...props} className="bg-gray-50" />,
+          tbody: ({ node, ...props }) => <tbody {...props} className="bg-white divide-y divide-gray-200" />,
+          tr: ({ node, ...props }) => <tr {...props} />,
+          th: ({ node, ...props }) => (
+            <th {...props} className="px-4 py-2 text-left text-xs font-medium text-gray-700 uppercase tracking-wider border border-gray-300" />
+          ),
+          td: ({ node, ...props }) => (
+            <td {...props} className="px-4 py-2 text-sm text-gray-900 border border-gray-300" />
+          ),
+          // Code blocks
+          code: ({ node, inline, ...props }: any) =>
+            inline ? (
+              <code {...props} className="bg-gray-100 text-red-600 px-1 py-0.5 rounded text-sm font-mono" />
+            ) : (
+              <code {...props} className="block bg-gray-900 text-gray-100 p-3 rounded my-2 overflow-x-auto text-sm font-mono" />
+            ),
+          pre: ({ node, ...props }) => <pre {...props} className="my-2" />,
+          // Blockquotes
+          blockquote: ({ node, ...props }) => (
+            <blockquote {...props} className="border-l-4 border-gray-300 pl-4 italic my-2 text-gray-700" />
+          ),
+          // Paragraphs
+          p: ({ node, ...props }) => <p {...props} className="my-1" />,
+        }}
+      >
+        {text}
+      </ReactMarkdown>
+    )
+  }
+
   const sampleQueries = [
     { icon: '📈', label: '주식 정보', query: '애플 주식 가격 알려줘' },
     { icon: '🌤️', label: '날씨', query: '서울 날씨 알려줘' },
@@ -152,11 +234,14 @@ export default function Home() {
               Ollama & FastAPI 기반 생성형 UI 챗봇
             </p>
           </div>
-          <ModelSelector
-            onModelChange={(model) => {
-              console.log('모델 변경:', model)
-            }}
-          />
+          <div className="flex items-center gap-3">
+            <MCPSettings />
+            <ModelSelector
+              onModelChange={(model) => {
+                console.log('모델 변경:', model)
+              }}
+            />
+          </div>
         </div>
 
         {/* Sample Query Buttons - Always Visible */}
@@ -204,11 +289,17 @@ export default function Home() {
                   : 'bg-white border'
               )}
             >
-              {message.component && (
-                <div className="mb-3">{renderComponent(message.component)}</div>
+              {message.components && message.components.length > 0 && (
+                <div className="space-y-3 mb-3">
+                  {message.components.map((component, idx) => (
+                    <div key={idx}>{renderComponent(component)}</div>
+                  ))}
+                </div>
               )}
               {message.content && (
-                <p className="whitespace-pre-wrap">{message.content}</p>
+                <div className="prose prose-sm max-w-none">
+                  {renderMarkdown(message.content, message.role === 'user')}
+                </div>
               )}
             </div>
           </div>
@@ -225,6 +316,9 @@ export default function Home() {
             </div>
           </div>
         )}
+
+        {/* Auto-scroll anchor */}
+        <div ref={messagesEndRef} />
       </div>
 
       {/* Input */}
