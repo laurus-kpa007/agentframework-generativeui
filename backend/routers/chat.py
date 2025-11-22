@@ -195,6 +195,9 @@ async def stream_chat(request: ChatRequest):
                     if file_count > 20:
                         response_text += f"\n...그 외 {file_count - 20}개 파일 더 있습니다."
 
+                    # Add MCP tool info
+                    response_text += f"\n\n---\n🔧 **사용된 MCP Tool:** `filesystem.search_files`"
+
                     yield StreamEvent.text(response_text)
 
                     # Add to conversation
@@ -226,6 +229,9 @@ async def stream_chat(request: ChatRequest):
                         response_text += f"**요약:** {answer}\n\n"
 
                     response_text += f"**{len(results)}개의 검색 결과를 찾았습니다:**\n\n"
+
+                    # Add MCP tool info
+                    response_text += f"\n---\n🔧 **사용된 MCP Tool:** `tavily.tavily_search`\n\n"
 
                     yield StreamEvent.text(response_text)
 
@@ -274,6 +280,9 @@ async def stream_chat(request: ChatRequest):
                     response_text += f"🌡️ **온도:** {temp}°C\n"
                     response_text += f"💨 **풍속:** {windspeed} km/h\n"
                     response_text += f"🕐 **시간:** {weather.get('time', 'N/A')}\n"
+
+                    # Add MCP tool info
+                    response_text += f"\n---\n🔧 **사용된 MCP Tool:** `weather.get_current_weather`"
 
                     yield StreamEvent.text(response_text)
 

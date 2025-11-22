@@ -14,17 +14,23 @@ interface ProductCardProps {
 
 export function ProductCard({
   name,
-  price,
+  price = 0,
   originalPrice,
-  rating,
-  reviews,
+  rating = 0,
+  reviews = 0,
   description,
   category,
-  inStock,
+  inStock = true,
   image,
 }: ProductCardProps) {
-  const discount = originalPrice
-    ? Math.round(((originalPrice - price) / originalPrice) * 100)
+  // Ensure values are numbers
+  const safePrice = Number(price) || 0
+  const safeOriginalPrice = originalPrice ? Number(originalPrice) || 0 : 0
+  const safeRating = Number(rating) || 0
+  const safeReviews = Number(reviews) || 0
+
+  const discount = safeOriginalPrice > 0
+    ? Math.round(((safeOriginalPrice - safePrice) / safeOriginalPrice) * 100)
     : 0
 
   return (
@@ -57,8 +63,8 @@ export function ProductCard({
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1">
             <Star className="w-4 h-4 text-yellow-500 fill-current" />
-            <span className="font-medium text-sm">{rating.toFixed(1)}</span>
-            <span className="text-sm text-gray-500">({reviews})</span>
+            <span className="font-medium text-sm">{safeRating.toFixed(1)}</span>
+            <span className="text-sm text-gray-500">({safeReviews})</span>
           </div>
 
           <span
@@ -76,13 +82,13 @@ export function ProductCard({
 
         <div className="flex items-center justify-between pt-2 border-t">
           <div>
-            {originalPrice && (
+            {safeOriginalPrice > 0 && (
               <span className="text-sm text-gray-400 line-through mr-2">
-                ${originalPrice.toFixed(2)}
+                ${safeOriginalPrice.toFixed(2)}
               </span>
             )}
             <span className="text-2xl font-bold text-gray-900">
-              ${price.toFixed(2)}
+              ${safePrice.toFixed(2)}
             </span>
           </div>
 
