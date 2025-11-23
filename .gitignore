@@ -25,6 +25,9 @@ env/
 ENV/
 .venv
 
+# Exception: allow frontend/lib directory
+!frontend/lib/
+
 # Logs
 *.log
 logs/
